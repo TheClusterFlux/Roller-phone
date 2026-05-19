@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0a0a1a" />
+  <title>Bowling — Roller Phone</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="bowling-canvas"></canvas>
+
+    <div id="hud">
+      <div id="hud-top">
+        <a href="/hub/" id="back-btn" class="hud-btn">&larr;</a>
+        <div id="frame-display">Frame <span id="frame-num">1</span>/10</div>
+        <div id="score-display">Score: <span id="score-val">0</span></div>
+      </div>
+
+      <div id="power-meter-container" class="hidden">
+        <div id="power-meter">
+          <div id="power-fill"></div>
+        </div>
+        <div id="power-label">Swing Power</div>
+      </div>
+
+      <div id="center-message" class="hidden"></div>
+
+      <div id="position-controls" class="hidden">
+        <p class="instruction">Drag to position your ball</p>
+        <input type="range" id="position-slider" min="-1" max="1" step="0.01" value="0" />
+        <button id="ready-btn" class="btn btn-primary">Ready</button>
+      </div>
+
+      <div id="release-controls" class="hidden">
+        <button id="release-btn" class="btn btn-release">RELEASE</button>
+      </div>
+
+      <div id="result-controls" class="hidden">
+        <div id="result-text"></div>
+        <button id="next-btn" class="btn btn-primary">Next</button>
+      </div>
+
+      <div id="gameover-controls" class="hidden">
+        <div id="final-score-text"></div>
+        <div id="gameover-buttons">
+          <button id="replay-btn" class="btn btn-primary">Play Again</button>
+          <a href="/hub/" class="btn btn-secondary">Back to Hub</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="scorecard" class="hidden">
+      <table id="scorecard-table"></table>
+    </div>
+  </div>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

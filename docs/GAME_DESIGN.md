@@ -21,10 +21,11 @@ The first game in the Roller Phone collection. A gyroscope-controlled bowling ga
 
 ## Core Concept
 
-The player sees a bowling lane on their phone screen. They adjust their starting position by dragging left/right, then physically swing their phone in a bowling motion to roll the ball. The phone's accelerometer detects the swing speed and release angle, translating it into ball velocity and spin.
+The player sees a bowling lane on their phone screen. They adjust their starting position by dragging left/right, then physically swing their phone in a bowling motion. The phone's accelerometer detects the swing speed and angle — but the **release timing is controlled by a button tap**. This adds a skill element: you must tap the release button at the right moment in your swing to get a clean throw. Too early and the ball goes wide, too late and you lose power.
 
 **Key feel goals:**
-- The throw should feel **physical and satisfying** — speed matters, angle matters
+- The throw should feel **physical and satisfying** — speed matters, angle matters, **release timing matters**
+- The button release adds a learnable skill curve on top of the physical motion
 - Casual enough for anyone to pick up in 10 seconds
 - Rewarding enough that chasing a perfect game (300) keeps you playing
 
@@ -58,9 +59,9 @@ The player sees a bowling lane on their phone screen. They adjust their starting
 │       ▼                                                      │
 │  ┌──────────┐                                                │
 │  │  SWING   │  "Swing when ready!"                           │
-│  │  DETECT  │  Listens for bowling swing gesture             │
+│  │  PHASE   │  Gyro tracks swing, RELEASE button visible     │
 │  └────┬─────┘                                                │
-│       ▼  (swing detected)                                    │
+│       ▼  (player taps RELEASE button during swing)           │
 │  ┌──────────┐                                                │
 │  │  BALL    │  Ball rolls down lane with calculated          │
 │  │  ROLL    │  velocity, spin, and angle                     │
@@ -143,13 +144,17 @@ The core of the gameplay. Must reliably detect a bowling swing and extract meani
 - This is the main power phase
 - Track peak acceleration: this determines ball speed
 
-**Phase 4: Release Detection**
-- Sharp **deceleration** (acceleration drops rapidly)
-- OR angular change suggests the wrist has "released"
-- The moment of release captures:
-  - **Peak forward acceleration** → ball speed
+**Phase 4: Button Release (Player Skill)**
+- Player taps the **RELEASE button** at the right moment in their forward swing
+- The timing of the tap relative to the swing arc determines throw quality:
+  - **Perfect timing** (peak of forward acceleration): maximum power, clean direction
+  - **Early release** (still accelerating): reduced power, tends to go wide
+  - **Late release** (past peak, decelerating): reduced power, inconsistent angle
+- At the moment the button is tapped, the system captures:
+  - **Current forward acceleration** → ball speed
   - **Lateral acceleration** (`acceleration.x`) → left/right deviation
   - **Rotation rate** (`rotationRate.alpha` or `.gamma`) → ball spin/curve
+  - **Release timing score** → multiplier on power and accuracy
 
 **Swing Parameters Extracted:**
 
@@ -174,12 +179,12 @@ These values need extensive playtesting to get right. Plan for a debug overlay d
 
 ### Accidental Throw Prevention
 
-A common problem with motion-controlled games. Solutions:
+The button-release mechanic inherently prevents most accidental throws (you must explicitly tap to release). Additional safeguards:
 
-1. **Require "Ready" state**: Player must tap "Ready" before the game listens for swings
-2. **Wind-up requirement**: Must detect a backward motion before accepting a forward swing
-3. **Minimum swing duration**: The full swing (wind-up → release) must take at least 300ms
-4. **Cooldown**: After a throw, 2-second cooldown before next throw can register
+1. **Require "Ready" state**: Player must tap "Ready" before the game enters swing phase
+2. **Minimum swing threshold**: The RELEASE button only becomes active once a minimum swing acceleration is detected (player must actually be swinging)
+3. **Cooldown**: After a throw, 2-second cooldown before next throw can register
+4. **Timeout**: If no release is tapped within 10 seconds of entering swing phase, reset with a helpful nudge
 
 ---
 
@@ -346,15 +351,20 @@ How swing quality affects results:
 │     [Bowling Lane       │
 │      3D View]           │
 │                         │
+│   🎳 SWING & TAP TO     │
+│      RELEASE!           │
 │                         │
-│                         │
-│                         │
-│   🎳 SWING WHEN READY!  │
-│                         │
+│  ┌───────────────────┐  │
+│  │                   │  │
+│  │     RELEASE       │  │
+│  │                   │  │
+│  └───────────────────┘  │
 │                         │
 │  Frame: 3/10   Score: 45│
 └─────────────────────────┘
 ```
+
+The RELEASE button is large and thumb-accessible at the bottom of the screen. A swing power meter/indicator shows the current swing intensity in real-time so the player can time their release.
 
 ### After Throw (Result)
 
@@ -554,10 +564,10 @@ Ordered by priority and dependency. Each step produces something testable.
 
 | Device | OS | Browser | Priority |
 |--------|----|---------|----------|
-| iPhone 13+ | iOS 16+ | Safari | **Critical** (largest mobile web audience) |
-| iPhone SE (2nd/3rd gen) | iOS 16+ | Safari | **High** (small screen, test layout) |
-| Samsung Galaxy S21+ | Android 12+ | Chrome | **Critical** (Android reference) |
-| Google Pixel 6+ | Android 12+ | Chrome | **High** |
+| Google Pixel 7a | Android 13+ | Chrome | **Critical** (primary test device) |
+| Google Pixel 10 | Android 16+ | Chrome | **Critical** (primary test device) |
+| iPhone 13+ | iOS 16+ | Safari | **High** (largest mobile web audience) |
+| Samsung Galaxy S21+ | Android 12+ | Chrome | **Medium** |
 | Mid-range Android | Android 11+ | Chrome | **Medium** (performance floor) |
 | iPad | iPadOS 16+ | Safari | **Low** (works but not primary target) |
 | Desktop | Any | Chrome/Firefox | **Low** (show "use your phone" message) |

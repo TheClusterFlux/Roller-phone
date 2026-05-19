@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0a0a1a" />
+  <title>Roller Phone</title>
+  <link rel="stylesheet" href="./hub.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <h1 class="title">Roller<span class="accent">Phone</span></h1>
+      <p class="subtitle">Motion-controlled games for your phone</p>
+    </header>
+
+    <div id="sensor-banner" class="banner hidden">
+      <p id="sensor-message"></p>
+      <button id="enable-motion-btn" class="btn btn-primary hidden">Enable Motion Controls</button>
+    </div>
+
+    <section class="games-grid" id="games-grid"></section>
+
+    <footer class="footer">
+      <p>Hold your phone. Move your body. Play.</p>
+    </footer>
+  </div>
+  <script type="module" src="./hub.js"></script>
+</body>
+</html>
