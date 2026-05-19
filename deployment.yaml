@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: roller-phone
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: roller-phone
+  template:
+    metadata:
+      labels:
+        app: roller-phone
+    spec:
+      containers:
+        - name: roller-phone
+          image: docker.io/keanuwatts/theclusterflux:Roller-phone
+          imagePullPolicy: Always
+      imagePullSecrets:
+        - name: dockerhub-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: roller-phone
+spec:
+  selector:
+    app: roller-phone
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: roller-phone
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - roller-phone.theclusterflux.com
+    secretName: theclusterflux
+  rules:
+  - host: roller-phone.theclusterflux.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: roller-phone
+            port:
+              number: 8080
