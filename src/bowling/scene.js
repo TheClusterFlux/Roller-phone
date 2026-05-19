@@ -17,8 +17,16 @@ export class BowlingScene {
     this.scene.fog = new THREE.Fog(0x0a0a1a, 16, 22);
 
     this.camera = new THREE.PerspectiveCamera(50, 1, 0.1, 50);
-    this.camera.position.set(0, 2.5, 1.5);
-    this.camera.lookAt(0, 0.3, -LANE_LENGTH * 0.6);
+
+    this._defaultCamPos = new THREE.Vector3(0, 2.5, 1.5);
+    this._defaultCamLook = new THREE.Vector3(0, 0.3, -LANE_LENGTH * 0.6);
+    this._camPos = this._defaultCamPos.clone();
+    this._camLook = this._defaultCamLook.clone();
+    this._camTargetPos = this._defaultCamPos.clone();
+    this._camTargetLook = this._defaultCamLook.clone();
+
+    this.camera.position.copy(this._defaultCamPos);
+    this.camera.lookAt(this._defaultCamLook);
 
     this._setupLights();
     this._createLane();
@@ -257,6 +265,43 @@ export class BowlingScene {
       }
     }
     return anyAnimating;
+  }
+
+  setCameraFollow(ballX, ballZ) {
+    const behindDist = 2.5;
+    const height = 1.8;
+    const lookAhead = 4;
+
+    this._camTargetPos.set(
+      ballX * 0.5,
+      height,
+      ballZ + behindDist
+    );
+    this._camTargetLook.set(
+      ballX * 0.7,
+      0.15,
+      ballZ - lookAhead
+    );
+  }
+
+  setCameraPinView() {
+    const pinZ = -LANE_LENGTH + 1;
+    this._camTargetPos.set(0, 1.8, pinZ + 3);
+    this._camTargetLook.set(0, 0.2, pinZ - 0.5);
+  }
+
+  resetCamera() {
+    this._camTargetPos.copy(this._defaultCamPos);
+    this._camTargetLook.copy(this._defaultCamLook);
+  }
+
+  updateCamera(dt) {
+    const speed = 3.0;
+    const t = 1 - Math.exp(-speed * dt);
+    this._camPos.lerp(this._camTargetPos, t);
+    this._camLook.lerp(this._camTargetLook, t);
+    this.camera.position.copy(this._camPos);
+    this.camera.lookAt(this._camLook);
   }
 
   render() {

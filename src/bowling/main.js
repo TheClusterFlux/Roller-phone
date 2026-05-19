@@ -185,6 +185,7 @@ class BowlingGame {
   _enterPosition() {
     this._hideAll();
     this.state = State.POSITION;
+    this.scene.resetCamera();
     this.scene.resetBall();
 
     if (this.scoring.currentRoll === 0) {
@@ -256,6 +257,15 @@ class BowlingGame {
     this.ballPhysics.launch(startX, params.power, params.angle, params.spin);
 
     this.rollResult = params;
+    this._ballStalled = false;
+  }
+
+  _onBallStalled() {
+    this.state = State.PIN_FALL;
+    this.scoring.recordRoll(0);
+    this._updateHUD();
+    this._pinFallTimer = 0;
+    this._pinsKnockedThisRoll = 0;
   }
 
   _onBallReachedPins() {
@@ -269,6 +279,7 @@ class BowlingGame {
 
     const knocked = calculatePinKnockdown(
       ballX,
+      this.ballPhysics.vx,
       this.rollResult.power,
       this.rollResult.spin,
       pinPositions,
@@ -354,6 +365,7 @@ class BowlingGame {
     this.ballPhysics.reset();
     this.scene.resetAllPins();
     this.scene.resetBall();
+    this.scene.resetCamera();
     this._enterPosition();
   }
 
@@ -378,18 +390,22 @@ class BowlingGame {
       this.scene.ball.position.x = pos.x;
       this.scene.ball.position.z = pos.z;
 
-      // Ball spin visual
       this.scene.ball.rotation.x -= dt * 15;
       this.scene.ball.rotation.z += this.ballPhysics.spin * dt * 3;
 
+      this.scene.setCameraFollow(pos.x, pos.z);
+
       if (this.ballPhysics.reachedPins) {
         this._onBallReachedPins();
+      } else if (!this.ballPhysics.active && !this.ballPhysics.reachedPins) {
+        this._onBallStalled();
       }
     }
 
     if (this.state === State.PIN_FALL) {
       this._pinFallTimer += dt;
       const animating = this.scene.animatePinFall(dt);
+      this.scene.setCameraPinView();
 
       if (!animating || this._pinFallTimer > 2) {
         this.scene.ball.visible = false;
@@ -397,6 +413,7 @@ class BowlingGame {
       }
     }
 
+    this.scene.updateCamera(dt);
     this.scene.render();
     requestAnimationFrame((t) => this._loop(t));
   }

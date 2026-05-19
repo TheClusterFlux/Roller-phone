@@ -104,11 +104,11 @@ export class BowlingControls {
 
   captureDesktopRelease() {
     return {
-      power: 0.5 + Math.random() * 0.4,
-      angle: (Math.random() - 0.5) * 8,
-      spin: (Math.random() - 0.5) * 0.4,
-      timingQuality: 0.7 + Math.random() * 0.3,
-      rawPower: 0.6,
+      power: 0.3 + Math.random() * 0.6,
+      angle: (Math.random() - 0.5) * 20,
+      spin: (Math.random() - 0.5) * 0.8,
+      timingQuality: 0.4 + Math.random() * 0.6,
+      rawPower: 0.4 + Math.random() * 0.4,
     };
   }
 }
