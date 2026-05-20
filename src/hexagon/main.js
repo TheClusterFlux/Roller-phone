@@ -32,8 +32,11 @@ class HexGame {
     this.playerWorldAngle = -TAU / 4; // points up
 
     this.gyroCalibrated = false;
-    this.gyroAlphaOffset = 0;
+    this.gyroMode = 'flat'; // 'flat' (alpha axis) or 'vertical' (gamma axis)
+    this.gyroOffset = 0;
     this.gyroAlpha = 0;
+    this.gyroBeta = 0;
+    this.gyroGamma = 0;
     this.hasSensors = hasSensorSupport();
 
     this.activeWalls = [];
@@ -135,9 +138,9 @@ class HexGame {
     }
 
     window.addEventListener('deviceorientation', (e) => {
-      if (e.alpha !== null) {
-        this.gyroAlpha = e.alpha;
-      }
+      if (e.alpha !== null) this.gyroAlpha = e.alpha;
+      if (e.beta !== null) this.gyroBeta = e.beta;
+      if (e.gamma !== null) this.gyroGamma = e.gamma;
     });
   }
 
@@ -145,19 +148,37 @@ class HexGame {
     this.els.calOverlay.classList.remove('hidden');
     this.audio.resume();
 
-    // Sample alpha for 1.2 seconds
     await new Promise(r => setTimeout(r, 1200));
 
-    this.gyroAlphaOffset = this.gyroAlpha;
-    this.gyroCalibrated = true;
+    // Detect phone orientation from beta:
+    // beta ≈ 0°  → phone is flat on a surface → use alpha (compass heading)
+    // beta ≈ 90° → phone is upright/vertical  → use gamma (steering tilt)
+    const absBeta = Math.abs(this.gyroBeta);
+    if (absBeta > 45) {
+      this.gyroMode = 'vertical';
+      this.gyroOffset = this.gyroGamma;
+    } else {
+      this.gyroMode = 'flat';
+      this.gyroOffset = this.gyroAlpha;
+    }
 
+    this.gyroCalibrated = true;
     this.els.calOverlay.classList.add('hidden');
   }
 
   _getGyroRotation() {
     if (!this.hasSensors || !this.gyroCalibrated) return 0;
-    let delta = this.gyroAlpha - this.gyroAlphaOffset;
-    // Wrap around 0/360 boundary
+
+    if (this.gyroMode === 'vertical') {
+      // gamma ranges -90 to +90; scale up for responsive steering
+      let delta = this.gyroGamma - this.gyroOffset;
+      if (delta > 90) delta -= 180;
+      if (delta < -90) delta += 180;
+      return delta * (Math.PI / 180) * 2.5;
+    }
+
+    // Flat mode: alpha ranges 0 to 360
+    let delta = this.gyroAlpha - this.gyroOffset;
     if (delta > 180) delta -= 360;
     if (delta < -180) delta += 360;
     return -delta * (Math.PI / 180);
