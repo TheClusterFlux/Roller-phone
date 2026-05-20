@@ -28,8 +28,15 @@
       <div id="center-message" class="hidden"></div>
 
       <div id="position-controls" class="hidden">
-        <p class="instruction">Drag to position your ball</p>
-        <input type="range" id="position-slider" min="-1" max="1" step="0.01" value="0" />
+        <div class="control-row">
+          <label class="slider-label">Position</label>
+          <input type="range" id="position-slider" min="-1" max="1" step="0.01" value="0" />
+        </div>
+        <div class="control-row">
+          <label class="slider-label">Aim</label>
+          <input type="range" id="aim-slider" min="-15" max="15" step="0.5" value="0" />
+          <span id="aim-value" class="slider-value">0&deg;</span>
+        </div>
         <button id="ready-btn" class="btn btn-primary">Ready</button>
       </div>
 

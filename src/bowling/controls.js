@@ -5,7 +5,6 @@ const SWING_MIN_ACCEL = 4;
 const SWING_MAX_ACCEL = 30;
 const SPIN_MIN_RATE = 15;
 const SPIN_MAX_RATE = 200;
-const LATERAL_MAX = 12;
 
 export class BowlingControls {
   constructor() {
@@ -67,25 +66,17 @@ export class BowlingControls {
 
   captureRelease() {
     const corrected = this.calibrator.getCorrected();
-    const rawAccel = this.gyro.acceleration;
     const rotRate = this.gyro.rotationRate;
 
     const forwardAccel = Math.sqrt(corrected.x * corrected.x + corrected.y * corrected.y + corrected.z * corrected.z);
 
-    // Power: normalized from current acceleration
     const power = Math.max(0, Math.min(1,
       (forwardAccel - SWING_MIN_ACCEL) / (SWING_MAX_ACCEL - SWING_MIN_ACCEL)
     ));
 
-    // Release timing quality: how close current accel is to peak
     const timingRatio = this._peakAccel > 0 ? forwardAccel / this._peakAccel : 0.5;
     const timingBonus = Math.max(0, Math.min(1, timingRatio));
 
-    // Angle: from lateral acceleration
-    const lateralAccel = rawAccel.x || 0;
-    const angle = (lateralAccel / LATERAL_MAX) * 25;
-
-    // Spin: from rotation rate
     const rotMag = Math.abs(rotRate.gamma || 0);
     const spinDir = Math.sign(rotRate.gamma || 0);
     const spinAmount = Math.min(1, (rotMag - SPIN_MIN_RATE) / (SPIN_MAX_RATE - SPIN_MIN_RATE));
@@ -95,7 +86,6 @@ export class BowlingControls {
 
     return {
       power: finalPower,
-      angle: angle,
       spin: spin,
       timingQuality: timingBonus,
       rawPower: power,
@@ -105,7 +95,6 @@ export class BowlingControls {
   captureDesktopRelease() {
     return {
       power: 0.3 + Math.random() * 0.6,
-      angle: (Math.random() - 0.5) * 20,
       spin: (Math.random() - 0.5) * 0.8,
       timingQuality: 0.4 + Math.random() * 0.6,
       rawPower: 0.4 + Math.random() * 0.4,

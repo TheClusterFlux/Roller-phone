@@ -34,6 +34,7 @@ export class BowlingScene {
     this._createBall();
     this._createPins();
     this._createArrows();
+    this._createAimGuide();
 
     this.pinMeshes = [];
     this.pinStanding = new Array(10).fill(true);
@@ -197,6 +198,40 @@ export class BowlingScene {
       new THREE.Vector3(s / 2, 0, z - s * 2.598),         // 9
       new THREE.Vector3(s * 1.5, 0, z - s * 2.598),       // 10
     ];
+  }
+
+  _createAimGuide() {
+    const mat = new THREE.LineDashedMaterial({
+      color: 0xff9800,
+      dashSize: 0.3,
+      gapSize: 0.15,
+      transparent: true,
+      opacity: 0.6,
+    });
+    const points = [new THREE.Vector3(0, 0.01, 0), new THREE.Vector3(0, 0.01, -12)];
+    const geo = new THREE.BufferGeometry().setFromPoints(points);
+    this.aimGuide = new THREE.Line(geo, mat);
+    this.aimGuide.computeLineDistances();
+    this.aimGuide.visible = false;
+    this.scene.add(this.aimGuide);
+  }
+
+  setAimAngle(angleDeg) {
+    const ballPos = this.ball.position;
+    const rad = angleDeg * Math.PI / 180;
+    const length = 14;
+    const endX = ballPos.x + Math.sin(rad) * length;
+    const endZ = ballPos.z - Math.cos(rad) * length;
+
+    const positions = this.aimGuide.geometry.attributes.position;
+    positions.setXYZ(0, ballPos.x, 0.01, ballPos.z - 0.15);
+    positions.setXYZ(1, endX, 0.01, endZ);
+    positions.needsUpdate = true;
+    this.aimGuide.computeLineDistances();
+  }
+
+  showAimGuide(visible) {
+    this.aimGuide.visible = visible;
   }
 
   setBallPosition(x) {

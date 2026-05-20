@@ -28,6 +28,7 @@ class BowlingGame {
     this.hasSensors = hasSensorSupport();
     this.lastTime = 0;
     this.rollResult = null;
+    this.aimAngle = 0;
 
     this._cacheDOM();
     this._bindEvents();
@@ -40,6 +41,8 @@ class BowlingGame {
       scoreVal: document.getElementById('score-val'),
       positionControls: document.getElementById('position-controls'),
       positionSlider: document.getElementById('position-slider'),
+      aimSlider: document.getElementById('aim-slider'),
+      aimValue: document.getElementById('aim-value'),
       readyBtn: document.getElementById('ready-btn'),
       releaseControls: document.getElementById('release-controls'),
       releaseBtn: document.getElementById('release-btn'),
@@ -63,6 +66,15 @@ class BowlingGame {
         const val = parseFloat(this.els.positionSlider.value);
         const halfLane = LANE_WIDTH / 2 - 0.12;
         this.scene.setBallPosition(val * halfLane);
+        this.scene.setAimAngle(this.aimAngle);
+      }
+    });
+
+    this.els.aimSlider.addEventListener('input', () => {
+      if (this.state === State.POSITION) {
+        this.aimAngle = parseFloat(this.els.aimSlider.value);
+        this.els.aimValue.textContent = `${this.aimAngle > 0 ? '+' : ''}${this.aimAngle}\u00B0`;
+        this.scene.setAimAngle(this.aimAngle);
       }
     });
 
@@ -190,8 +202,14 @@ class BowlingGame {
 
     if (this.scoring.currentRoll === 0) {
       this.els.positionSlider.value = 0;
+      this.els.aimSlider.value = 0;
+      this.aimAngle = 0;
+      this.els.aimValue.textContent = '0\u00B0';
       this.scene.setBallPosition(0);
     }
+
+    this.scene.setAimAngle(this.aimAngle);
+    this.scene.showAimGuide(true);
 
     this.els.positionControls.classList.remove('hidden');
     this._updateHUD();
@@ -199,6 +217,7 @@ class BowlingGame {
 
   async _enterCalibrating() {
     this._hideAll();
+    this.scene.showAimGuide(false);
     this.state = State.CALIBRATING;
     this._showMessage('Hold still...');
 
@@ -254,7 +273,7 @@ class BowlingGame {
     this.state = State.ROLLING;
 
     const startX = this.scene.getBallPosition().x;
-    this.ballPhysics.launch(startX, params.power, params.angle, params.spin);
+    this.ballPhysics.launch(startX, params.power, this.aimAngle, params.spin);
 
     this.rollResult = params;
     this._ballStalled = false;
