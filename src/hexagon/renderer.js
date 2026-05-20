@@ -160,7 +160,6 @@ export class HexRenderer {
     const alpha = Math.min(1, normalizedDist * 1.5);
 
     for (let i = 0; i < sides; i++) {
-      // Check if this side is a gap
       const gapEnd = gapStart + gapSize;
       const isGap = (i >= gapStart && i < gapEnd) ||
                     (gapEnd > sides && i < (gapEnd % sides));
@@ -169,9 +168,20 @@ export class HexRenderer {
       const a1 = rotation + i * step;
       const a2 = rotation + (i + 1) * step;
 
+      const ix1 = Math.cos(a1) * innerR;
+      const iy1 = Math.sin(a1) * innerR;
+      const ix2 = Math.cos(a2) * innerR;
+      const iy2 = Math.sin(a2) * innerR;
+      const ox1 = Math.cos(a1) * outerR;
+      const oy1 = Math.sin(a1) * outerR;
+      const ox2 = Math.cos(a2) * outerR;
+      const oy2 = Math.sin(a2) * outerR;
+
       ctx.beginPath();
-      ctx.arc(0, 0, innerR, a1, a2);
-      ctx.arc(0, 0, outerR, a2, a1, true);
+      ctx.moveTo(ix1, iy1);
+      ctx.lineTo(ix2, iy2);
+      ctx.lineTo(ox2, oy2);
+      ctx.lineTo(ox1, oy1);
       ctx.closePath();
       ctx.fillStyle = this.colorScheme.wall;
       ctx.globalAlpha = alpha;

@@ -26,13 +26,12 @@ class HexGame {
     this.selectedSong = null;
     this.beatMap = null;
 
-    // World rotation = controlled by gyro
     this.worldRotation = 0;
-    // Player angle in world = fixed direction in physical space
+    this.touchRotation = 0;
     this.playerWorldAngle = -TAU / 4; // points up
 
     this.gyroCalibrated = false;
-    this.gyroMode = 'flat'; // 'flat' (alpha axis) or 'vertical' (gamma axis)
+    this.gyroMode = 'flat';
     this.gyroOffset = 0;
     this.gyroAlpha = 0;
     this.gyroBeta = 0;
@@ -88,7 +87,7 @@ class HexGame {
       e.preventDefault();
       const dx = e.touches[0].clientX - touchStartX;
       touchStartX = e.touches[0].clientX;
-      this.worldRotation += dx * 0.008;
+      this.touchRotation += dx * 0.008;
     });
     this.canvas.addEventListener('touchend', () => { touchActive = false; });
 
@@ -103,7 +102,7 @@ class HexGame {
       if (!mouseDown || this.state !== State.PLAYING) return;
       const dx = e.clientX - touchStartX;
       touchStartX = e.clientX;
-      this.worldRotation += dx * 0.008;
+      this.touchRotation += dx * 0.008;
     });
     window.addEventListener('mouseup', () => { mouseDown = false; });
   }
@@ -201,16 +200,16 @@ class HexGame {
       return;
     }
 
-    if (this.hasSensors && !this.gyroCalibrated) {
+    if (this.hasSensors) {
       await this._calibrate();
     }
 
-    // Reset game state
     this.time = 0;
     this.activeWalls = [];
     this.nextWallIndex = 0;
     this.wallSpeed = WALL_SPEED_BASE;
     this.worldRotation = 0;
+    this.touchRotation = 0;
     this.colorCycleTime = 0;
     this.renderer.setColorScheme(0);
 
@@ -273,9 +272,11 @@ class HexGame {
 
     this.time += dt;
 
-    // Gyro controls world rotation
+    // Combine gyro rotation + touch/mouse offset
     if (this.hasSensors && this.gyroCalibrated) {
-      this.worldRotation = this._getGyroRotation();
+      this.worldRotation = this._getGyroRotation() + this.touchRotation;
+    } else {
+      this.worldRotation = this.touchRotation;
     }
 
     // Speed ramp: gets faster over time

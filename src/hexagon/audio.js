@@ -90,22 +90,23 @@ export function generateBeatMap(buffer, bpm) {
   const walls = [];
   const samplesPerBeat = Math.floor(sampleRate * beatInterval);
 
-  // Analyze energy at each beat to determine wall difficulty
   let beatTime = 0;
   let beatIndex = 0;
+  let lastGap = 0;
+
+  // Gentle intro: skip first 4 beats
+  const introBeats = 4;
 
   while (beatTime < duration - 0.5) {
     const sampleStart = Math.floor(beatTime * sampleRate);
     const sampleEnd = Math.min(sampleStart + samplesPerBeat, rawData.length);
 
-    // RMS energy for this beat window
     let rms = 0;
     for (let i = sampleStart; i < sampleEnd; i++) {
       rms += rawData[i] * rawData[i];
     }
     rms = Math.sqrt(rms / (sampleEnd - sampleStart));
 
-    // Peak detection in this window
     let peak = 0;
     for (let i = sampleStart; i < sampleEnd; i++) {
       const abs = Math.abs(rawData[i]);
@@ -115,32 +116,48 @@ export function generateBeatMap(buffer, bpm) {
     const energy = Math.min(1, rms * 4);
     const intensity = Math.min(1, peak * 2);
 
-    // Generate wall pattern based on energy
-    if (energy > 0.05) {
-      const gapSize = mapRange(energy, 0.05, 0.8, 2.5, 1.0);
-      const gapPosition = selectGapPosition(beatIndex, energy, intensity);
-      const sides = energy > 0.5 ? 6 : 6;
+    if (beatIndex >= introBeats && energy > 0.05) {
+      // Difficulty ramps over the song: first 30s easier, then harder
+      const progress = Math.min(1, beatTime / 60);
+
+      // Gap size: starts generous (3 sides), narrows to 2 over time
+      const minGap = 2.0 - progress * 0.5;
+      const gapSize = Math.max(minGap, 3.0 - energy * 1.5 - progress * 0.5);
+
+      // Gap position: at most 2 sides away from previous gap so it's always reachable
+      const maxJump = Math.min(3, Math.floor(1 + progress * 2));
+      const direction = beatIndex % 2 === 0 ? 1 : -1;
+      const jump = 1 + Math.floor(energy * maxJump);
+      const gapPosition = ((lastGap + direction * jump) % 6 + 6) % 6;
+      lastGap = gapPosition;
 
       walls.push({
         time: beatTime,
         distance: 1.0,
         gapStart: gapPosition,
         gapSize: gapSize,
-        sides: sides,
+        sides: 6,
         energy: energy,
       });
 
-      // High-energy beats get a second wall half a beat later
-      if (intensity > 0.6 && beatTime + beatInterval / 2 < duration) {
-        const gap2 = (gapPosition + 3 + Math.floor(Math.random() * 2)) % 6;
+      // Extra half-beat walls only after 20s, and gap must be adjacent to main gap
+      if (intensity > 0.7 && beatTime > 20 && beatTime + beatInterval / 2 < duration) {
+        const gap2 = ((gapPosition + (Math.random() > 0.5 ? 1 : -1)) % 6 + 6) % 6;
         walls.push({
           time: beatTime + beatInterval / 2,
           distance: 1.0,
           gapStart: gap2,
-          gapSize: Math.max(1.0, gapSize - 0.3),
-          sides: sides,
+          gapSize: Math.max(minGap, gapSize - 0.3),
+          sides: 6,
           energy: intensity,
         });
+        lastGap = gap2;
+      }
+
+      // Skip every other beat early on to keep things slow
+      if (beatTime < 15 && beatIndex % 2 === 0) {
+        beatTime += beatInterval;
+        beatIndex++;
       }
     }
 
@@ -149,19 +166,4 @@ export function generateBeatMap(buffer, bpm) {
   }
 
   return { walls, bpm, duration };
-}
-
-function selectGapPosition(beatIndex, energy, intensity) {
-  // Create patterns that flow naturally — avoid pure randomness
-  const base = beatIndex % 6;
-  const offset = Math.floor(energy * 3);
-  if (intensity > 0.7) {
-    return (base + 3) % 6; // Opposite side on intense beats
-  }
-  return (base + offset) % 6;
-}
-
-function mapRange(value, inMin, inMax, outMin, outMax) {
-  const clamped = Math.max(inMin, Math.min(inMax, value));
-  return outMin + (clamped - inMin) / (inMax - inMin) * (outMax - outMin);
 }
