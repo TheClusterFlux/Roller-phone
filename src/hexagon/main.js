@@ -26,9 +26,8 @@ class HexGame {
     this.selectedSong = null;
     this.beatMap = null;
 
-    this.worldRotation = 0;
+    this.playerAngle = -TAU / 4; // starts pointing up
     this.touchRotation = 0;
-    this.playerWorldAngle = -TAU / 4; // points up
 
     this.gyroCalibrated = false;
     this.gyroMode = 'flat';
@@ -208,7 +207,7 @@ class HexGame {
     this.activeWalls = [];
     this.nextWallIndex = 0;
     this.wallSpeed = WALL_SPEED_BASE;
-    this.worldRotation = 0;
+    this.playerAngle = -TAU / 4;
     this.touchRotation = 0;
     this.colorCycleTime = 0;
     this.renderer.setColorScheme(0);
@@ -239,9 +238,7 @@ class HexGame {
   }
 
   _checkCollision() {
-    // Player position in world coordinates
-    const playerAngle = this.playerWorldAngle - this.worldRotation;
-    const playerNorm = ((playerAngle % TAU) + TAU) % TAU;
+    const playerNorm = ((this.playerAngle % TAU) + TAU) % TAU;
     const sides = 6;
     const step = TAU / sides;
 
@@ -272,11 +269,12 @@ class HexGame {
 
     this.time += dt;
 
-    // Combine gyro rotation + touch/mouse offset
+    // Gyro + touch drives the player triangle's position around the hexagon
+    const baseAngle = -TAU / 4; // "up" = calibrated zero
     if (this.hasSensors && this.gyroCalibrated) {
-      this.worldRotation = this._getGyroRotation() + this.touchRotation;
+      this.playerAngle = baseAngle + this._getGyroRotation() + this.touchRotation;
     } else {
-      this.worldRotation = this.touchRotation;
+      this.playerAngle = baseAngle + this.touchRotation;
     }
 
     // Speed ramp: gets faster over time
@@ -344,8 +342,8 @@ class HexGame {
       const bassEnergy = this.audio.getBassEnergy();
 
       this.renderer.render({
-        worldRotation: this.worldRotation,
-        playerAngle: this.playerWorldAngle,
+        worldRotation: 0,
+        playerAngle: this.playerAngle,
         walls: this.activeWalls,
         hexRadius: HEX_RADIUS,
         energy: bassEnergy,
@@ -353,8 +351,8 @@ class HexGame {
       });
     } else if (this.state === State.DEAD) {
       this.renderer.render({
-        worldRotation: this.worldRotation,
-        playerAngle: this.playerWorldAngle,
+        worldRotation: 0,
+        playerAngle: this.playerAngle,
         walls: this.activeWalls,
         hexRadius: HEX_RADIUS,
         energy: 0,
