@@ -9,6 +9,14 @@ const games = [
     icon: '\uD83C\uDFB3',
     status: 'playable',
   },
+  {
+    id: 'hexagon',
+    name: 'HexSpin',
+    description: 'Rotate your phone to dodge walls synced to the beat. How long can you survive?',
+    path: '/hexagon/',
+    icon: '\u2B21',
+    status: 'playable',
+  },
 ];
 
 function renderGames() {

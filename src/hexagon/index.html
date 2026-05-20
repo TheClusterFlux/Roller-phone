@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <title>Hexagon — Roller Phone</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="hex-canvas"></canvas>
+
+    <div id="menu-screen">
+      <h1 class="menu-title">HEX<span class="accent">SPIN</span></h1>
+      <p class="menu-sub">Rotate your phone to survive</p>
+      <div id="song-list"></div>
+      <button id="calibrate-btn" class="btn btn-secondary">Calibrate Gyro</button>
+      <a href="/hub/" class="btn btn-back">&larr; Hub</a>
+    </div>
+
+    <div id="game-hud" class="hidden">
+      <div id="time-display">0.00</div>
+      <div id="song-title-display"></div>
+    </div>
+
+    <div id="gameover-screen" class="hidden">
+      <div id="go-time">0.00s</div>
+      <div id="go-label">seconds survived</div>
+      <button id="retry-btn" class="btn btn-primary">Retry</button>
+      <button id="menu-btn" class="btn btn-secondary">Song Select</button>
+    </div>
+
+    <div id="calibrate-overlay" class="hidden">
+      <p>Hold your phone flat and still...</p>
+      <div id="cal-progress"></div>
+    </div>
+  </div>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

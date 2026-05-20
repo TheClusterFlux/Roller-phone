@@ -1,0 +1,251 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0a0a0a;
+  --accent: #ff2d55;
+  --accent2: #5856d6;
+  --text: #eee;
+  --text-dim: #777;
+  --surface: rgba(20, 20, 20, 0.9);
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  touch-action: none;
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#game-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#hex-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+}
+
+#menu-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  background: var(--bg);
+  z-index: 10;
+}
+
+.menu-title {
+  font-size: 2.8rem;
+  font-weight: 900;
+  letter-spacing: -2px;
+}
+
+.accent {
+  color: var(--accent);
+}
+
+.menu-sub {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+}
+
+#song-list {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.song-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.song-card:active,
+.song-card:hover {
+  border-color: var(--accent);
+  background: rgba(255, 45, 85, 0.08);
+}
+
+.song-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.song-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.song-name {
+  font-size: 1rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.song-artist {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.song-bpm {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.btn {
+  display: inline-block;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.1s;
+  text-decoration: none;
+  text-align: center;
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(255, 45, 85, 0.3);
+  min-width: 200px;
+}
+
+.btn-secondary {
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+  min-width: 200px;
+}
+
+.btn-back {
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  padding: 8px 20px;
+}
+
+#game-hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  padding: env(safe-area-inset-top, 16px) 16px 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+#time-display {
+  font-size: 2rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+
+#song-title-display {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+#gameover-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: rgba(0,0,0,0.85);
+  z-index: 10;
+}
+
+#go-time {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: var(--accent);
+}
+
+#go-label {
+  font-size: 1rem;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+}
+
+#calibrate-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: rgba(0,0,0,0.92);
+  z-index: 20;
+  font-size: 1.1rem;
+}
+
+#cal-progress {
+  width: 160px;
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+#cal-progress::after {
+  content: '';
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  border-radius: 2px;
+  animation: cal-fill 1.2s linear forwards;
+}
+
+@keyframes cal-fill {
+  to { width: 100%; }
+}
+
+.hidden {
+  display: none !important;
+}

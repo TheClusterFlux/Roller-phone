@@ -11,6 +11,7 @@ export default defineConfig({
       input: {
         hub: resolve(__dirname, 'src/hub/index.html'),
         bowling: resolve(__dirname, 'src/bowling/index.html'),
+        hexagon: resolve(__dirname, 'src/hexagon/index.html'),
       },
     },
   },
