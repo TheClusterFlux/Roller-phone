@@ -179,7 +179,7 @@ class HexGame {
     let delta = this.gyroAlpha - this.gyroOffset;
     if (delta > 180) delta -= 360;
     if (delta < -180) delta += 360;
-    return -delta * (Math.PI / 180);
+    return delta * (Math.PI / 180);
   }
 
   async _startGame(song) {
