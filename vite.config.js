@@ -1,9 +1,15 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import { execSync } from 'child_process';
+
+const commitHash = execSync('git rev-parse --short HEAD').toString().trim();
 
 export default defineConfig({
   root: 'src',
   publicDir: '../public',
+  define: {
+    __APP_VERSION__: JSON.stringify(commitHash),
+  },
   build: {
     outDir: '../dist',
     emptyOutDir: true,

@@ -1,4 +1,5 @@
 import { HexRenderer } from './renderer.js';
+import '../shared/version.js';
 import { AudioEngine, generateBeatMap } from './audio.js';
 import { requestMotionPermission, hasSensorSupport, needsPermissionRequest } from '../shared/permissions.js';
 import { haptics } from '../shared/haptics.js';

@@ -1,4 +1,5 @@
 import { hasSensorSupport, needsPermissionRequest, requestMotionPermission, getPermissionState } from '../shared/permissions.js';
+import '../shared/version.js';
 
 const games = [
   {

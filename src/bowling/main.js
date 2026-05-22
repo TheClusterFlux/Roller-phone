@@ -1,4 +1,5 @@
 import { BowlingScene, LANE_WIDTH, LANE_LENGTH, PIN_SPACING } from './scene.js';
+import '../shared/version.js';
 import { BallPhysics, calculatePinKnockdown } from './physics.js';
 import { BowlingControls } from './controls.js';
 import { ScoringEngine } from './scoring.js';
