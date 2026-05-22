@@ -278,11 +278,12 @@ class HexGame {
     const input = gyro + this.touchRotation;
 
     if (this.gyroMode === 'vertical') {
-      // Steering wheel: world rotates, triangle stays pointing up
-      this.worldRotation = input;
-      this.playerAngle = -TAU / 4;
+      // Steering wheel: world is locked to screen, triangle tracks gravity (always points up physically)
+      // Tilt phone right → triangle drifts left on screen (stays pointing at ceiling)
+      this.worldRotation = 0;
+      this.playerAngle = -TAU / 4 - input;
     } else {
-      // Compass: triangle moves, world stays still
+      // Compass: triangle moves based on compass heading, world stays still
       this.worldRotation = 0;
       this.playerAngle = -TAU / 4 + input;
     }
