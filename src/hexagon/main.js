@@ -174,7 +174,7 @@ class HexGame {
       let delta = this.gyroGamma - this.gyroOffset;
       if (delta > 90) delta -= 180;
       if (delta < -90) delta += 180;
-      return delta * (Math.PI / 180) * 2.5;
+      return delta * (Math.PI / 180);
     }
 
     // Flat mode: alpha ranges 0 to 360
