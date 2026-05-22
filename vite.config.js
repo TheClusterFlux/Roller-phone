@@ -1,8 +1,11 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
-import { execSync } from 'child_process';
+import { readFileSync } from 'fs';
 
-const buildNumber = execSync('git rev-list --count HEAD').toString().trim();
+let buildNumber = '?';
+try {
+  buildNumber = readFileSync('.buildnum', 'utf-8').trim();
+} catch (_) {}
 
 export default defineConfig({
   root: 'src',
