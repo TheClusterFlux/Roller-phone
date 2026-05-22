@@ -26,7 +26,8 @@ class HexGame {
     this.selectedSong = null;
     this.beatMap = null;
 
-    this.playerAngle = -TAU / 4; // starts pointing up
+    this.playerAngle = -TAU / 4;
+    this.worldRotation = 0;
     this.touchRotation = 0;
 
     this.gyroCalibrated = false;
@@ -208,6 +209,7 @@ class HexGame {
     this.nextWallIndex = 0;
     this.wallSpeed = WALL_SPEED_BASE;
     this.playerAngle = -TAU / 4;
+    this.worldRotation = 0;
     this.touchRotation = 0;
     this.colorCycleTime = 0;
     this.renderer.setColorScheme(0);
@@ -238,7 +240,9 @@ class HexGame {
   }
 
   _checkCollision() {
-    const playerNorm = ((this.playerAngle % TAU) + TAU) % TAU;
+    // Player's angle relative to the (possibly rotated) wall coordinate system
+    const relativeAngle = this.playerAngle - this.worldRotation;
+    const playerNorm = ((relativeAngle % TAU) + TAU) % TAU;
     const sides = 6;
     const step = TAU / sides;
 
@@ -269,12 +273,17 @@ class HexGame {
 
     this.time += dt;
 
-    // Gyro + touch drives the player triangle's position around the hexagon
-    const baseAngle = -TAU / 4; // "up" = calibrated zero
-    if (this.hasSensors && this.gyroCalibrated) {
-      this.playerAngle = baseAngle + this._getGyroRotation() + this.touchRotation;
+    const gyro = (this.hasSensors && this.gyroCalibrated) ? this._getGyroRotation() : 0;
+    const input = gyro + this.touchRotation;
+
+    if (this.gyroMode === 'vertical') {
+      // Steering wheel: world rotates, triangle stays pointing up
+      this.worldRotation = input;
+      this.playerAngle = -TAU / 4;
     } else {
-      this.playerAngle = baseAngle + this.touchRotation;
+      // Compass: triangle moves, world stays still
+      this.worldRotation = 0;
+      this.playerAngle = -TAU / 4 + input;
     }
 
     // Speed ramp: gets faster over time
@@ -342,7 +351,7 @@ class HexGame {
       const bassEnergy = this.audio.getBassEnergy();
 
       this.renderer.render({
-        worldRotation: 0,
+        worldRotation: this.worldRotation,
         playerAngle: this.playerAngle,
         walls: this.activeWalls,
         hexRadius: HEX_RADIUS,
@@ -351,7 +360,7 @@ class HexGame {
       });
     } else if (this.state === State.DEAD) {
       this.renderer.render({
-        worldRotation: 0,
+        worldRotation: this.worldRotation,
         playerAngle: this.playerAngle,
         walls: this.activeWalls,
         hexRadius: HEX_RADIUS,
