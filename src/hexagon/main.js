@@ -37,7 +37,7 @@ class HexGame {
     this.gyroAlpha = 0;
     this.gyroBeta = 0;
     this.gyroGamma = 0;
-    this.integratedZ = 0; // accumulated rotation for vertical mode (radians)
+    this.gravityAngle = 0; // angle of "up" relative to screen top
     this.hasSensors = hasSensorSupport();
 
     this.activeWalls = [];
@@ -145,11 +145,12 @@ class HexGame {
     });
 
     window.addEventListener('devicemotion', (e) => {
-      if (this.gyroMode !== 'vertical' || this.state !== State.PLAYING) return;
-      if (!e.rotationRate) return;
-      const rateZ = e.rotationRate.alpha || 0;
-      const interval = (e.interval || 16) / 1000;
-      this.integratedZ += rateZ * interval * (Math.PI / 180);
+      const g = e.accelerationIncludingGravity;
+      if (!g) return;
+      // atan2(x, y) gives angle of gravity relative to screen-top
+      // Negate to get "up" direction. Smoothed to reduce jitter.
+      const raw = Math.atan2(-(g.x || 0), g.y || 0);
+      this.gravityAngle = this.gravityAngle * 0.7 + raw * 0.3;
     });
   }
 
@@ -165,7 +166,7 @@ class HexGame {
     const absBeta = Math.abs(this.gyroBeta);
     if (absBeta > 45) {
       this.gyroMode = 'vertical';
-      this.gyroOffset = this.gyroGamma;
+      this.gyroOffset = this.gravityAngle;
     } else {
       this.gyroMode = 'flat';
       this.gyroOffset = this.gyroAlpha;
@@ -179,7 +180,7 @@ class HexGame {
     if (!this.hasSensors || !this.gyroCalibrated) return 0;
 
     if (this.gyroMode === 'vertical') {
-      return this.integratedZ;
+      return this.gravityAngle - this.gyroOffset;
     }
 
     // Flat mode: alpha ranges 0 to 360
@@ -217,7 +218,6 @@ class HexGame {
     this.playerAngle = -TAU / 4;
     this.worldRotation = 0;
     this.touchRotation = 0;
-    this.integratedZ = 0;
     this.colorCycleTime = 0;
     this.renderer.setColorScheme(0);
 
