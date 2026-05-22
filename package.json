@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "prebuild": "node -e \"const{execSync:e}=require('child_process');const{writeFileSync:w}=require('fs');try{const n=e('git rev-list --count HEAD 2>/dev/null').toString().trim();w('.buildnum',n)}catch(_){try{const f=require('fs').readFileSync('.buildnum','utf-8');if(!f.trim())throw 0}catch(__){w('.buildnum',Date.now().toString(36))}}\"",
+    "prebuild": "node -e \"const{execSync:e}=require('child_process');const{writeFileSync:w}=require('fs');try{const n=e('git rev-list --count HEAD 2>/dev/null').toString().trim();if(parseInt(n)>1)w('.buildnum',n)}catch(_){}\"",
     "build": "vite build",
     "preview": "vite preview --host --port 8080"
   },
